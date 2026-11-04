@@ -1,0 +1,37 @@
+name: napari-refkv
+display_name: napari-refkv
+schema_version: 0.2.1
+contributions:
+  commands:
+    - id: napari-refkv.get_reader
+      python_name: napari_refkv._reader:napari_get_reader
+      title: Open as virtual OME-Zarr
+    - id: napari-refkv.widget
+      python_name: napari_refkv._widget:RefkvWidget
+      title: Open virtual OME-Zarr
+  readers:
+    - command: napari-refkv.get_reader
+      accepts_directories: false
+      filename_patterns:
+        - '*.[cC][zZ][iI]'
+        - '*.[tT][iI][fF]'
+        - '*.[tT][iI][fF][fF]'
+        - '*.[sS][vV][sS]'
+        - '*.[nN][dD][pP][iI]'
+        - '*.[nN][dD]2'
+        - '*.[lL][iI][fF]'
+        - '*.[iI][mM][sS]'
+        - '*.[vV][sS][iI]'
+        - '*.[qQ][pP][tT][iI][fF][fF]'
+        - '*.[dD][cC][mM]'
+        - '*.[dD][iI][cC][oO][mM]'
+        - '*.[nN][iI][iI]'
+        - '*.[nN][iI][iI].[gG][zZ]'
+        - '*.[nN][rR][rR][dD]'
+        - '*.[nN][hH][dD][rR]'
+        - '*.[mM][rR][cC]'
+        - '*.[mM][aA][pP]'
+        - '*.[vV][zZ][iI][pP]'
+  widgets:
+    - command: napari-refkv.widget
+      display_name: Open virtual OME-Zarr
