@@ -3,15 +3,32 @@ requires = ["hatchling>=1.26"]
 build-backend = "hatchling.build"
 
 [project]
-name = "napari-refkv"
-version = "0.1.0"
-description = "Open refkv-supported images as lazy virtual OME-Zarr in napari"
+name = "napari-virtual-reader"
+version = "0.0.1"
+description = "Experimental napari plugin for lazy virtual OME-Zarr images via refkv"
 readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
+authors = [
+    {name = "Sebastian Rhode", email = "sebrhode@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Framework :: napari",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+]
+
+keywords = ["napari", "plugin", "ome-zarr", "virtual"]
+
 dependencies = [
-    "napari>=0.6",
+    "napari>=0.10.0",
     "refkv[zarr,images]>=0.2.0",
     "zarr>=3.4",
     "dask[array]>=2024.1",
@@ -24,10 +41,17 @@ dependencies = [
 testing = ["pytest>=8", "pytest-qt>=4.4", "ruff>=0.9", "tifffile"]
 
 [project.entry-points."napari.manifest"]
-napari-refkv = "napari_refkv:napari.yaml"
+napari-virtual-reader = "napari_virtual_reader:napari.yaml"
+
+[project.urls]
+    "Homepage" = "https://github.com/sebi06/napari-virtual-reader"
+    "Bug Tracker" = "https://github.com/sebi06/napari-virtual-reader/issues"
+    "Documentation" = "https://github.com/sebi06/napari-virtual-reader#readme"
+    "Source Code" = "https://github.com/sebi06/napari-virtual-reader"
+
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/napari_refkv"]
+packages = ["src/napari_virtual_reader"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

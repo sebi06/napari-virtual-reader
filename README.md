@@ -1,4 +1,7 @@
-# napari-refkv
+# napari-virtual-reader
+
+**Experimental software - Alpha status.** APIs and behavior may change without
+notice. Validate results independently before relying on them for analysis.
 
 Open image files as lazy, reference-backed OME-Zarr in napari. No pixel
 conversion, copied image data, or intermediate archive is required.
@@ -11,30 +14,35 @@ or the napari-czitools plugin.
 Python 3.12 or newer is required. Install into the environment running napari:
 
 ```powershell
-python -m pip install -e "F:\GitHub\napari-refkv"
+python -m pip install napari-virtual-reader
 ```
 
 A working Qt backend is required. For a fresh environment:
 
 ```powershell
-python -m pip install "napari[pyqt6]" -e ".[testing]"
+python -m pip install "napari[pyqt6]" napari-virtual-reader
+napari
 ```
+
+Restart napari after installation. The package registers an npe2 reader and
+widget through its `napari.manifest` entry point; no manual registration is
+required. Check **Plugins > Plugin Manager** for **napari-virtual-reader**.
 
 ## Open an image
 
-In napari, choose **Plugins > napari-refkv > Open virtual OME-Zarr**, select
-the input, and click **Open**. Preparation runs in a background worker; napari
+In napari, choose **Plugins > napari-virtual-reader > Open Data as virtual OME-ZARR**,
+select the input, and click **Open**. Preparation runs in a background worker; napari
 provides its normal layer, contrast, time, and Z controls.
 
 You can also use **File > Open** or drop a file on the napari canvas and choose
-the napari-refkv reader. Drop a file on the plugin dock to select it without
+the napari-virtual-reader reader. Drop a file on the plugin dock to select it without
 opening it yet.
 
 ```python
 import napari
 
 viewer = napari.Viewer()
-viewer.open("image.czi", plugin="napari-refkv")
+viewer.open("image.czi", plugin="napari-virtual-reader")
 napari.run()
 ```
 
@@ -45,7 +53,7 @@ the source by default.
 
 ### Save a VZIP Archive
 
-In **Plugins > napari-refkv > Open virtual OME-Zarr**, select an image and enable
+In **Plugins > napari-virtual-reader > Open Data as virtual OME-ZARR**, select an image and enable
 **Save VZIP archive** before clicking **Open**. Choose the destination in the
 save dialog; the suggested filename is a sibling `.vzip`. Saving runs in the
 background, and the resulting image still opens lazily with the metadata panel.
@@ -62,7 +70,7 @@ File/Open and canvas drops remain in-memory operations without automatic saving.
 
 The **Virtual Zarr metadata** dock opens on the right when using the refkv reader
 through File/Open or drag-and-drop, without opening the plugin widget first.
-It also appears with **Plugins > napari-refkv > Open virtual OME-Zarr**.
+It also appears with **Plugins > napari-virtual-reader > Open Data as virtual OME-ZARR**.
 Both workflows share one inspector that follows the selected image layer.
 
 - **Zarr structure** shows expandable groups and arrays, including original
@@ -105,7 +113,29 @@ sliders or CZI-specific options.
 ## Development
 
 ```powershell
+git clone https://github.com/sebi06/napari-virtual-reader.git
+cd napari-virtual-reader
 python -m pip install -e ".[testing]"
 python -m pytest
 python -m ruff check .
 ```
+
+Install a Qt backend as above if the development environment does not already
+provide one. Development installs register the same napari plugin as PyPI installs.
+
+## Releases
+
+GitHub Actions tests pull requests and pushes to `main`. Publishing runs only
+after the test matrix passes on a release tag such as `v0.0.1`.
+
+Configure the repository Actions secret `NAPARI_VIRTUAL_READER_TOKEN` before
+publishing. It must contain a PyPI API token with upload access to
+`napari-virtual-reader`.
+
+Set `project.version` in `pyproject.toml` to the intended release version before
+tagging; tags do not change the package version. PyPI requires a new
+version for every upload. Manual workflow runs test and build without publishing.
+
+See the [changelog](CHANGELOG.md) for the change history and the
+[draft release notes](_release_notes/v0.0.1.md) for the upcoming release. Complete
+the release notes and date the changelog after PyPI publication is verified.

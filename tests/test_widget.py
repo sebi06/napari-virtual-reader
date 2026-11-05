@@ -10,8 +10,8 @@ import pytest
 import zarr
 from qtpy.QtCore import Qt
 
-from napari_refkv._reader import _layers
-from napari_refkv._widget import RefkvWidget
+from napari_virtual_reader._reader import _layers
+from napari_virtual_reader._widget import VirtualReaderWidget
 
 
 def test_worker_opens_on_main_thread(qtbot, monkeypatch):
@@ -27,8 +27,8 @@ def test_worker_opens_on_main_thread(qtbot, monkeypatch):
         worker_threads.append(threading.get_ident())
         return [(da.zeros((8, 10)), {"contrast_limits": (0, 1)}, "image")]
 
-    monkeypatch.setattr("napari_refkv._widget.read_images", prepare)
-    widget = RefkvWidget(viewer)
+    monkeypatch.setattr("napari_virtual_reader._widget.read_images", prepare)
+    widget = VirtualReaderWidget(viewer)
     qtbot.addWidget(widget)
     assert widget.minimumWidth() == 260
     assert not widget.open_button.isEnabled()
@@ -53,8 +53,8 @@ def test_failure_restores_controls(qtbot, monkeypatch):
     def fail(path):
         raise ValueError("Unsupported image")
 
-    monkeypatch.setattr("napari_refkv._widget.read_images", fail)
-    widget = RefkvWidget(viewer)
+    monkeypatch.setattr("napari_virtual_reader._widget.read_images", fail)
+    widget = VirtualReaderWidget(viewer)
     qtbot.addWidget(widget)
     widget.filename.setText("image.bin")
     widget._open()
@@ -69,7 +69,7 @@ def test_closed_dock_discards_results(qtbot):
     """Closing during preparation must not create unexpected viewer layers."""
     viewer = Mock()
     viewer.window._qt_window.findChildren.return_value = []
-    widget = RefkvWidget(viewer)
+    widget = VirtualReaderWidget(viewer)
     qtbot.addWidget(widget)
     widget.close()
     widget._loaded([(da.zeros((8, 10)), {}, "image")])
@@ -85,7 +85,7 @@ def test_metadata_dock_follows_active_layer(qtbot, make_napari_viewer, already_o
     root.attrs["ome"] = {"multiscales": [{"axes": ["y", "x"], "datasets": [{"path": "0"}]}]}
     data, kwargs, _ = _layers(root, Path("example.tif"))[0]
     first = viewer.add_image(data, **kwargs) if already_open else None
-    widget = RefkvWidget(viewer)
+    widget = VirtualReaderWidget(viewer)
     qtbot.addWidget(widget)
     if first is None:
         first = viewer.add_image(data, **kwargs)
@@ -125,13 +125,13 @@ def test_reader_only_open_creates_metadata_dock(tmp_path, qtbot, make_napari_vie
     """File/Open must show metadata without first opening the plugin widget."""
     import tifffile
 
-    from napari_refkv._metadata import MetadataPanel
+    from napari_virtual_reader._metadata import MetadataPanel
 
     source = tmp_path / "image.tif"
     tifffile.imwrite(source, np.zeros((8, 10), dtype="uint16"), metadata={"axes": "YX"})
     viewer = make_napari_viewer()
-    assert not viewer.window._qt_window.findChildren(RefkvWidget)
-    viewer.open(str(source), plugin="napari-refkv")
+    assert not viewer.window._qt_window.findChildren(VirtualReaderWidget)
+    viewer.open(str(source), plugin="napari-virtual-reader")
     qtbot.waitUntil(lambda: bool(viewer.window._qt_window.findChildren(MetadataPanel)))
     panels = viewer.window._qt_window.findChildren(MetadataPanel)
     assert len(panels) == 1
@@ -139,12 +139,12 @@ def test_reader_only_open_creates_metadata_dock(tmp_path, qtbot, make_napari_vie
     assert viewer.window._qt_window.dockWidgetArea(panel.dock) == Qt.RightDockWidgetArea
     assert panel.source.text() == "image.tif"
     assert not panel.dock.isHidden()
-    assert not viewer.window._qt_window.findChildren(RefkvWidget)
+    assert not viewer.window._qt_window.findChildren(VirtualReaderWidget)
     panel.dock.hide()
-    viewer.open(str(source), plugin="napari-refkv")
+    viewer.open(str(source), plugin="napari-virtual-reader")
     assert not panel.dock.isHidden()
     assert len(viewer.window._qt_window.findChildren(MetadataPanel)) == 1
-    widget = RefkvWidget(viewer)
+    widget = VirtualReaderWidget(viewer)
     qtbot.addWidget(widget)
     assert widget.metadata_panel is panel
 
@@ -153,19 +153,19 @@ def test_widget_saves_archive_in_background(tmp_path, qtbot, make_napari_viewer,
     """The opt-in worker writes an archive and keeps metadata and viewer loading."""
     import tifffile
 
-    from napari_refkv._reader import read_images
+    from napari_virtual_reader._reader import read_images
 
     source = tmp_path / "image.tif"
     output = tmp_path / "chosen.vzip"
     expected = np.arange(80, dtype="uint16").reshape(8, 10)
     tifffile.imwrite(source, expected, metadata={"axes": "YX"})
     viewer = make_napari_viewer()
-    widget = RefkvWidget(viewer)
+    widget = VirtualReaderWidget(viewer)
     qtbot.addWidget(widget)
     assert not widget.save_archive.isChecked()
     widget.filename.setText(str(source))
     widget.save_archive.setChecked(True)
-    monkeypatch.setattr("napari_refkv._widget.QFileDialog.getSaveFileName", lambda *args, **kwargs: (str(output), ""))
+    monkeypatch.setattr("napari_virtual_reader._widget.QFileDialog.getSaveFileName", lambda *args, **kwargs: (str(output), ""))
     widget._open()
     assert not widget.save_archive.isEnabled()
     qtbot.waitUntil(lambda: widget._worker is None, timeout=10000)
@@ -185,18 +185,18 @@ def test_save_dialog_cancellation_and_replacement(tmp_path, qtbot, monkeypatch, 
 
     viewer = Mock()
     viewer.window._qt_window.findChildren.return_value = []
-    widget = RefkvWidget(viewer)
+    widget = VirtualReaderWidget(viewer)
     qtbot.addWidget(widget)
     widget.filename.setText(str(tmp_path / "image.tif"))
     widget.save_archive.setChecked(True)
     output = tmp_path / "existing.vzip"
     output.write_bytes(b"existing archive")
     destination = "" if choice == "cancel" else str(output)
-    monkeypatch.setattr("napari_refkv._widget.QFileDialog.getSaveFileName", lambda *args, **kwargs: (destination, ""))
+    monkeypatch.setattr("napari_virtual_reader._widget.QFileDialog.getSaveFileName", lambda *args, **kwargs: (destination, ""))
     question = Mock(return_value=QMessageBox.Yes if choice == "replace" else QMessageBox.No)
-    monkeypatch.setattr("napari_refkv._widget.QMessageBox.question", question)
+    monkeypatch.setattr("napari_virtual_reader._widget.QMessageBox.question", question)
     create_worker = Mock()
-    monkeypatch.setattr("napari_refkv._widget.create_worker", create_worker)
+    monkeypatch.setattr("napari_virtual_reader._widget.create_worker", create_worker)
     widget._open()
     if choice == "replace":
         assert create_worker.call_args.args[1:] == (widget.filename.text(), str(output))

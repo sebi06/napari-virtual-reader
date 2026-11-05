@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import zarr
 
-from napari_refkv._reader import (
+from napari_virtual_reader._reader import (
     _layers,
     napari_get_reader,
     read_and_save_image,

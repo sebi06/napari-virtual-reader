@@ -1,16 +1,16 @@
-name: napari-refkv
-display_name: napari-refkv
+name: napari-virtual-reader
+display_name: napari-virtual-reader
 schema_version: 0.2.1
 contributions:
   commands:
-    - id: napari-refkv.get_reader
-      python_name: napari_refkv._reader:napari_get_reader
+    - id: napari-virtual-reader.get_reader
+      python_name: napari_virtual_reader._reader:napari_get_reader
       title: Open as virtual OME-Zarr
-    - id: napari-refkv.widget
-      python_name: napari_refkv._widget:RefkvWidget
+    - id: napari-virtual-reader.widget
+      python_name: napari_virtual_reader._widget:VirtualReaderWidget
       title: Open virtual OME-Zarr
   readers:
-    - command: napari-refkv.get_reader
+    - command: napari-virtual-reader.get_reader
       accepts_directories: false
       filename_patterns:
         - '*.[cC][zZ][iI]'
@@ -33,5 +33,5 @@ contributions:
         - '*.[mM][aA][pP]'
         - '*.[vV][zZ][iI][pP]'
   widgets:
-    - command: napari-refkv.widget
-      display_name: Open virtual OME-Zarr
+    - command: napari-virtual-reader.widget
+      display_name: Open Data as virtual OME-ZARR

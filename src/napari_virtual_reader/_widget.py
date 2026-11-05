@@ -27,7 +27,7 @@ from ._reader import IMAGE_SUFFIXES, read_and_save_image, read_images
 logger = logging.getLogger(__name__)
 
 
-class RefkvWidget(QWidget):
+class VirtualReaderWidget(QWidget):
     """Open images through refkv, preparing layers away from the Qt main thread."""
 
     def __init__(self, viewer: napari.Viewer) -> None:

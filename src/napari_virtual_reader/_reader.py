@@ -93,7 +93,9 @@ def _contrast_limits(dtype: np.dtype, channel: dict) -> tuple[float, float]:
     return fallback
 
 
-def _stack_czi_scenes(layers: list[tuple[Any, dict, str]], source: Path) -> list[tuple[Any, dict, str]]:
+def _stack_czi_scenes(
+    layers: list[tuple[Any, dict, str]], source: Path
+) -> list[tuple[Any, dict, str]]:
     """Stack compatible CZI series per channel while retaining scene provenance."""
     channels = {}
     for layer in layers:
@@ -103,7 +105,9 @@ def _stack_czi_scenes(layers: list[tuple[Any, dict, str]], source: Path) -> list
     result = []
     for scenes in channels.values():
         first = scenes[0][1]
-        levels = [data if kwargs["multiscale"] else [data] for data, kwargs, _ in scenes]
+        levels = [
+            data if kwargs["multiscale"] else [data] for data, kwargs, _ in scenes
+        ]
         compatible = all(
             kwargs["axis_labels"] == first["axis_labels"]
             and np.allclose(kwargs["scale"], first["scale"])
@@ -114,7 +118,11 @@ def _stack_czi_scenes(layers: list[tuple[Any, dict, str]], source: Path) -> list
             )
             for scene_levels, (_, kwargs, _) in zip(levels, scenes)
         )
-        if len(scenes) < 2 or "s" in (axis.lower() for axis in first["axis_labels"]) or not compatible:
+        if (
+            len(scenes) < 2
+            or "s" in (axis.lower() for axis in first["axis_labels"])
+            or not compatible
+        ):
             result.extend(scenes)
             continue
         stacked = [da.stack(level, axis=0) for level in zip(*levels)]
@@ -136,7 +144,9 @@ def _stack_czi_scenes(layers: list[tuple[Any, dict, str]], source: Path) -> list
             "scale": (1.0,) + first["scale"],
             "translate": (0.0,)
             + tuple(
-                origin if all(scene[1]["translate"][index] == origin for scene in scenes) else 0.0
+                origin
+                if all(scene[1]["translate"][index] == origin for scene in scenes)
+                else 0.0
                 for index, origin in enumerate(first["translate"])
             ),
             "metadata": metadata,
@@ -150,10 +160,15 @@ def _zarr_structure(group: Any) -> dict:
     children = []
     for name, node in sorted(
         group.members(),
-        key=lambda item: (not item[0].isdecimal(), int(item[0]) if item[0].isdecimal() else item[0]),
+        key=lambda item: (
+            not item[0].isdecimal(),
+            int(item[0]) if item[0].isdecimal() else item[0],
+        ),
     ):
         if hasattr(node, "shape"):
-            children.append({"name": name, "kind": "array", "metadata": node.metadata.to_dict()})
+            children.append(
+                {"name": name, "kind": "array", "metadata": node.metadata.to_dict()}
+            )
         else:
             children.append({"name": name, **_zarr_structure(node)})
     return {"kind": "group", "attributes": dict(group.attrs), "children": children}
@@ -166,7 +181,10 @@ def _layers(root: Any, source: Path) -> list[tuple[Any, dict, str]]:
     layers = []
     for group_name, group, ome in _image_groups(root):
         for series_index, multiscale in enumerate(ome["multiscales"]):
-            axes = tuple((axis if isinstance(axis, str) else axis["name"]).lower() for axis in multiscale["axes"])
+            axes = tuple(
+                (axis if isinstance(axis, str) else axis["name"]).lower()
+                for axis in multiscale["axes"]
+            )
             if len(set(axes)) != len(axes) or not {"y", "x"}.issubset(axes):
                 raise ValueError(f"Unsupported image axes in {group_name}: {axes}")
             datasets = multiscale["datasets"]
@@ -174,17 +192,23 @@ def _layers(root: Any, source: Path) -> list[tuple[Any, dict, str]]:
             if not arrays or any(array.ndim != len(axes) for array in arrays):
                 raise ValueError(f"Invalid OME image dimensions in {group_name}")
             channel_axis = axes.index("c") if "c" in axes else None
-            channel_count = arrays[0].shape[channel_axis] if channel_axis is not None else 1
-            if channel_axis is not None and any(array.shape[channel_axis] != channel_count for array in arrays):
+            channel_count = (
+                arrays[0].shape[channel_axis] if channel_axis is not None else 1
+            )
+            if channel_axis is not None and any(
+                array.shape[channel_axis] != channel_count for array in arrays
+            ):
                 raise ValueError(f"Channel counts differ across levels in {group_name}")
             remaining_axes = tuple(axis for axis in axes if axis != "c")
-            display_axes = tuple(axis for axis in remaining_axes if axis not in {"y", "x"}) + ("y", "x")
+            display_axes = tuple(
+                axis for axis in remaining_axes if axis not in {"y", "x"}
+            ) + ("y", "x")
             permutation = tuple(remaining_axes.index(axis) for axis in display_axes)
             scale = np.ones(len(axes))
             translate = np.zeros(len(axes))
-            transforms = datasets[0].get("coordinateTransformations", []) + multiscale.get(
+            transforms = datasets[0].get(
                 "coordinateTransformations", []
-            )
+            ) + multiscale.get("coordinateTransformations", [])
             for transform in transforms:
                 if transform["type"] == "scale":
                     factor = np.asarray(transform["scale"])
@@ -197,14 +221,23 @@ def _layers(root: Any, source: Path) -> list[tuple[Any, dict, str]]:
             lazy_levels = [_lazy_array(array) for array in arrays]
             channels = ome.get("omero", {}).get("channels", [])
             for channel_index in range(channel_count):
-                selection = tuple(channel_index if axis == "c" else slice(None) for axis in axes)
-                levels = [level[selection].transpose(permutation) for level in lazy_levels]
-                channel = channels[channel_index] if channel_index < len(channels) else {}
+                selection = tuple(
+                    channel_index if axis == "c" else slice(None) for axis in axes
+                )
+                levels = [
+                    level[selection].transpose(permutation) for level in lazy_levels
+                ]
+                channel = (
+                    channels[channel_index] if channel_index < len(channels) else {}
+                )
                 colormap = "gray"
                 color = channel.get("color", "")
                 if isinstance(color, str) and len(color) == 6:
                     try:
-                        rgb = [int(color[start : start + 2], 16) / 255 for start in (0, 2, 4)]
+                        rgb = [
+                            int(color[start : start + 2], 16) / 255
+                            for start in (0, 2, 4)
+                        ]
                         colormap = Colormap([[0, 0, 0], rgb], name=f"refkv_{color}")
                     except ValueError:
                         pass
@@ -216,7 +249,9 @@ def _layers(root: Any, source: Path) -> list[tuple[Any, dict, str]]:
                     "name": f"{source.stem} | {series_name} | {label}",
                     "axis_labels": display_axes,
                     "scale": tuple(scale[axes.index(axis)] for axis in display_axes),
-                    "translate": tuple(translate[axes.index(axis)] for axis in display_axes),
+                    "translate": tuple(
+                        translate[axes.index(axis)] for axis in display_axes
+                    ),
                     "contrast_limits": _contrast_limits(arrays[0].dtype, channel),
                     "colormap": colormap,
                     "blending": "additive",
@@ -231,7 +266,9 @@ def _layers(root: Any, source: Path) -> list[tuple[Any, dict, str]]:
                         "ome": ome,
                     },
                 }
-                layers.append((levels if len(levels) > 1 else levels[0], kwargs, "image"))
+                layers.append(
+                    (levels if len(levels) > 1 else levels[0], kwargs, "image")
+                )
     if not layers:
         raise ValueError("refkv found no supported OME image series in this file.")
     if root.attrs.get("refkv_zarrified", {}).get("profile") == "czi":
@@ -245,8 +282,19 @@ def _layers(root: Any, source: Path) -> list[tuple[Any, dict, str]]:
 def read_images(path: str | list[str]) -> list[tuple[Any, dict, str]]:
     """Open local images or VZIP archives as lazy virtual OME-Zarr layers.
 
-    Raw images are virtualized in memory. No archive or converted pixels are
-    written. Sources must remain available while their layers are being used.
+    Args:
+        path: One local source path or a list of source paths.
+
+    Returns:
+        napari layer-data tuples containing lazy arrays and display metadata.
+
+    Raises:
+        FileNotFoundError: A source is not an existing file.
+        ValueError: Image axes, transforms or OME metadata are unsupported.
+
+    Notes:
+        Raw images are virtualized in memory. No archive or converted pixels
+        are written. Sources must remain available while layers are being used.
     """
     import refkv.zarr
     import zarr
@@ -259,15 +307,34 @@ def read_images(path: str | list[str]) -> list[tuple[Any, dict, str]]:
         if not source.is_file():
             raise FileNotFoundError(f"Image file does not exist: {source}")
         store = (
-            refkv.zarr.open(str(source)) if source.suffix.lower() == ".vzip" else refkv.zarr.store(zarrify(str(source)))
+            refkv.zarr.open(str(source))
+            if source.suffix.lower() == ".vzip"
+            else refkv.zarr.store(zarrify(str(source)))
         )
         root = zarr.open_group(store, mode="r")
         layers.extend(_layers(root, source))
     return layers
 
 
-def read_and_save_image(path: str, archive_path: str, *, overwrite: bool = False) -> list[tuple[Any, dict, str]]:
-    """Prepare lazy layers and atomically save their reference archive, not pixels."""
+def read_and_save_image(
+    path: str, archive_path: str, *, overwrite: bool = False
+) -> list[tuple[Any, dict, str]]:
+    """Prepare lazy layers and atomically save their reference archive, not pixels.
+
+    Args:
+        path: Local image source; existing VZIP archives are not accepted.
+        archive_path: Destination ending in .vzip, separate from the source.
+        overwrite: Allow atomic replacement of an existing destination.
+
+    Returns:
+        napari layer-data tuples retaining references to the original source.
+
+    Raises:
+        FileNotFoundError: The source or destination directory does not exist.
+        FileExistsError: The destination exists and overwrite is disabled.
+        ValueError: The source, destination or OME image metadata is unsupported.
+        OSError: Staging or atomically publishing the archive fails.
+    """
     import refkv.zarr
     import zarr
     from refkv.zarrify import zarrify
@@ -281,7 +348,9 @@ def read_and_save_image(path: str, archive_path: str, *, overwrite: bool = False
     if destination == source or destination.suffix.lower() != ".vzip":
         raise ValueError("Choose a separate .vzip archive destination.")
     if not destination.parent.is_dir():
-        raise FileNotFoundError(f"Archive directory does not exist: {destination.parent}")
+        raise FileNotFoundError(
+            f"Archive directory does not exist: {destination.parent}"
+        )
     if destination.exists() and not overwrite:
         raise FileExistsError(f"Archive already exists: {destination}")
     reference = zarrify(str(source))
@@ -300,7 +369,15 @@ def read_and_save_image(path: str, archive_path: str, *, overwrite: bool = False
 
 
 def napari_get_reader(path: str | list[str]):
-    """Offer the reader for supported image extensions without opening the file."""
+    """Offer the reader for supported image extensions without opening the file.
+
+    Args:
+        path: A local source path or list of paths supplied by napari.
+
+    Returns:
+        The reader callable when every suffix is supported, otherwise None.
+        A matching suffix does not guarantee that the image can be decoded.
+    """
     paths = path if isinstance(path, list) else [path]
     if paths and all(str(item).lower().endswith(IMAGE_SUFFIXES) for item in paths):
         qt_widgets = sys.modules.get("qtpy.QtWidgets")
