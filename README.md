@@ -128,10 +128,6 @@ provide one. Development installs register the same napari plugin as PyPI instal
 GitHub Actions tests pull requests and pushes to `main`. Publishing runs only
 after the test matrix passes on a release tag such as `v0.0.1`.
 
-Configure the repository Actions secret `NAPARI_VIRTUAL_READER_TOKEN` before
-publishing. It must contain a PyPI API token with upload access to
-`napari-virtual-reader`.
-
 Set `project.version` in `pyproject.toml` to the intended release version before
 tagging; tags do not change the package version. PyPI requires a new
 version for every upload. Manual workflow runs test and build without publishing.
