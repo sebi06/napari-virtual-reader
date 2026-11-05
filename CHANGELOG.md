@@ -1,9 +1,9 @@
 # Changelog
 
-Notable changes to napari-virtual-reader are recorded here. Entries marked
-unreleased have not yet been published to PyPI.
+Notable changes to napari-virtual-reader are recorded here. Publication status
+is recorded separately from the release preparation date.
 
-## 0.0.1 - Unreleased
+## 0.0.1 - 2026-11-05
 
 ### Added
 
@@ -20,5 +20,6 @@ unreleased have not yet been published to PyPI.
 
 ### Release Status
 
-Publication is pending. Replace "Unreleased" with the release date and complete
-the [release notes](_release_notes/v0.0.1.md) after publication is verified.
+Initial experimental Alpha release, prepared for tag `v0.0.1`. GitHub Actions
+and PyPI publication are pending. See the [release notes](_release_notes/v0.0.1.md)
+for features, validation, and known limitations.

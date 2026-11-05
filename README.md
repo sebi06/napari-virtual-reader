@@ -133,5 +133,6 @@ tagging; tags do not change the package version. PyPI requires a new
 version for every upload. Manual workflow runs test and build without publishing.
 
 See the [changelog](CHANGELOG.md) for the change history and the
-[draft release notes](_release_notes/v0.0.1.md) for the upcoming release. Complete
-the release notes and date the changelog after PyPI publication is verified.
+[release notes](_release_notes/v0.0.1.md) for v0.0.1 features, validation, and
+limitations. Publication status is recorded in those files and updated after
+GitHub Actions and PyPI publication are verified.
