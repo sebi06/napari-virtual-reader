@@ -30,6 +30,9 @@ Restart napari after installation. The package registers an npe2 reader and
 widget through its `napari.manifest` entry point; no manual registration is
 required. Check **Plugins > Plugin Manager** for **napari-virtual-reader**.
 
+The plugin is also listed on
+[napari hub](https://napari-hub.org/plugins/napari-virtual-reader.html).
+
 ## Open an image
 
 In napari, choose **Plugins > napari-virtual-reader > Open Data as virtual OME-ZARR**,
