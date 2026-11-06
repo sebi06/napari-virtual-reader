@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "napari-virtual-reader"
-version = "0.0.1"
+version = "0.0.2"
 description = "Experimental napari plugin for lazy virtual OME-Zarr images via refkv"
 readme = "README.md"
 license = "BSD-3-Clause"

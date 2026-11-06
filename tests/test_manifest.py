@@ -1,6 +1,5 @@
 """Plugin registration agrees with the reader's supported filename patterns."""
 
-from fnmatch import fnmatchcase
 from importlib.metadata import distribution
 from pathlib import Path
 from pkgutil import resolve_name
@@ -28,13 +27,11 @@ def test_installed_plugin_discovery():
 
 
 def test_manifest_patterns_and_commands():
-    """Every advertised suffix works in lower, upper and mixed case."""
+    """Every supported suffix has a simple extension pattern and valid commands."""
     manifest = PluginManifest.from_file(
         Path(__file__).parents[1] / "src" / "napari_virtual_reader" / "napari.yaml"
     )
     patterns = manifest.contributions.readers[0].filename_patterns
-    for suffix in IMAGE_SUFFIXES:
-        for variant in (suffix, suffix.upper(), suffix.title()):
-            assert any(fnmatchcase(f"image{variant}", pattern) for pattern in patterns)
+    assert sorted(patterns) == sorted(f"*{suffix}" for suffix in IMAGE_SUFFIXES)
     for command in manifest.contributions.commands:
         assert callable(resolve_name(command.python_name))

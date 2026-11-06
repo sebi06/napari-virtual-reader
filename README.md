@@ -9,6 +9,8 @@ conversion, copied image data, or intermediate archive is required.
 The plugin uses refkv directly. It does not depend on czitools, pylibCZIrw,
 or the napari-czitools plugin.
 
+<img src="https://raw.githubusercontent.com/sebi06/napari-virtual-reader/main/_images/czi_virtual_omezarr1.png" alt="Alt Text" style="width:80%; height:auto;">
+
 ## Install
 
 Python 3.12 or newer is required. Install into the environment running napari:
@@ -33,6 +35,8 @@ required. Check **Plugins > Plugin Manager** for **napari-virtual-reader**.
 In napari, choose **Plugins > napari-virtual-reader > Open Data as virtual OME-ZARR**,
 select the input, and click **Open**. Preparation runs in a background worker; napari
 provides its normal layer, contrast, time, and Z controls.
+
+<img src="https://raw.githubusercontent.com/sebi06/napari-virtual-reader/main/_images/reader_plugin.png" alt="Alt Text" style="width:50%; height:auto;">
 
 You can also use **File > Open** or drop a file on the napari canvas and choose
 the napari-virtual-reader reader. Drop a file on the plugin dock to select it without
@@ -80,6 +84,8 @@ Both workflows share one inspector that follows the selected image layer.
 - A filter finds matching properties; selecting a row shows its complete,
   selectable value below the tree.
 
+<img src="https://raw.githubusercontent.com/sebi06/napari-virtual-reader/main/_images/czi_virtual_omezarr2.png" alt="Alt Text" style="width:80%; height:auto;">
+
 The inspector uses a metadata-only snapshot collected in the background. It
 does not scan pixel data or reconstruct the source hierarchy from displayed
 layer shapes. Selecting an unrelated layer clears the inspector.
@@ -90,8 +96,7 @@ layer shapes. Selecting an unrelated layer clears the inspector.
   Reader registration includes common microscopy and volumetric image extensions;
   actual support is determined by refkv's parser and the file's metadata/codecs.
 - One layer per channel. Compatible CZI scenes are stacked lazily along a leading
-  **S** axis, in numeric series order; for example, 28 equally sized 2D scenes
-  become one `(28, Y, X)` layer per channel. This also applies to CZI-derived
+  **S** axis, in numeric series order. This also applies to CZI-derived
   VZIP archives. Other formats retain separate series layers.
 - CZI stacking requires matching axes, shapes, dtypes, physical scales and
   pyramid levels. Incompatible scenes remain separate without cropping or
@@ -126,13 +131,13 @@ provide one. Development installs register the same napari plugin as PyPI instal
 ## Releases
 
 GitHub Actions tests pull requests and pushes to `main`. Publishing runs only
-after the test matrix passes on a release tag such as `v0.0.1`.
+after the test matrix passes on a release tag in the form `vX.Y.Z`.
 
 Set `project.version` in `pyproject.toml` to the intended release version before
 tagging; tags do not change the package version. PyPI requires a new
 version for every upload. Manual workflow runs test and build without publishing.
 
 See the [changelog](CHANGELOG.md) for the change history and the
-[release notes](_release_notes/v0.0.1.md) for v0.0.1 features, validation, and
-limitations. Publication status is recorded in those files and updated after
-GitHub Actions and PyPI publication are verified.
+[release notes](_release_notes/) for release-specific features, validation, and
+limitations. Published tags and release details are available on
+[GitHub Releases](https://github.com/sebi06/napari-virtual-reader/releases).
