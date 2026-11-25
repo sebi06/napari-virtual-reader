@@ -29,7 +29,7 @@ keywords = ["napari", "plugin", "ome-zarr", "virtual"]
 
 dependencies = [
     "napari>=0.10.0",
-    "refkv[zarr,images]>=0.2.0",
+    "refkv[zarr,images]>=0.2.0, <0.3.0",
     "zarr>=3.4",
     "dask[array]>=2024.1",
     "numpy>=2",
